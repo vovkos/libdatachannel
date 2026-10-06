@@ -377,12 +377,6 @@ shared_ptr<TlsTransport> WebSocket::initTlsTransport() {
 
 		bool verify = mHostname.has_value() && !config.disableTlsVerification;
 
-#ifdef _WIN32
-		if (std::exchange(verify, false)) {
-			PLOG_WARNING << "TLS certificate verification with root CA is not supported on Windows";
-		}
-#endif
-
 		shared_ptr<TlsTransport> transport;
 		if (verify)
 			transport = std::make_shared<VerifiedTlsTransport>(lower, mHostname.value(),

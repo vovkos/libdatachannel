@@ -587,12 +587,6 @@ TlsTransport::TlsTransport(variant<shared_ptr<TcpTransport>, shared_ptr<HttpProx
 		SSL_CTX_set_tmp_ecdh(mCtx, ecdh.get());
 #endif
 
-		if(mIsClient) {
-			if (!SSL_CTX_set_default_verify_paths(mCtx)) {
-				PLOG_WARNING << "SSL root CA certificates unavailable";
-			}
-		}
-
 		if (certificate) {
 			auto [x509, pkey] = certificate->credentials();
 			SSL_CTX_use_certificate(mCtx, x509);

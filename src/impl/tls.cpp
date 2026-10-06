@@ -330,6 +330,38 @@ void SSL_CTX_add_cert_to_store_from_pem(SSL_CTX *ctx, const string &pem) {
 	sk_X509_INFO_pop_free(certs, X509_INFO_free);
 }
 
+#ifdef _WIN32
+
+void SSL_CTX_add_win_cert_store(SSL_CTX *ctx, DWORD location, LPCWSTR name) {
+	X509_STORE *sslStore = SSL_CTX_get_cert_store(ctx);
+	if (!sslStore) {
+		throw std::runtime_error("Failed to get certificate store");
+	}
+
+	HCERTSTORE winStore = CertOpenStore(CERT_STORE_PROV_SYSTEM_W, 0, 0,
+	                                    location | CERT_STORE_READONLY_FLAG,
+	                                    name);
+	if (!winStore) {
+		throw std::runtime_error("Failed to open Windows system store, error=" +
+		                         std::to_string(GetLastError()));
+	}
+
+	PCCERT_CONTEXT certContext = NULL;
+	while ((certContext = CertEnumCertificatesInStore(winStore, certContext))) {
+		const unsigned char *p = certContext->pbCertEncoded;
+		X509 *x509 = d2i_X509(NULL, &p, static_cast<long>(certContext->cbCertEncoded));
+		if (x509) {
+			X509_STORE_add_cert(sslStore, x509);
+			X509_free(x509); // X509_STORE_add_cert adds a reference
+		}
+	}
+
+	ERR_clear_error(); // clean up unparsable or duplicate certificate errors
+	CertCloseStore(winStore, 0);
+}
+
+#endif
+
 } // namespace rtc::openssl
 
 #endif

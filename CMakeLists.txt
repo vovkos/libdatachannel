@@ -385,6 +385,10 @@ target_link_libraries(datachannel-static PRIVATE
 if(WIN32)
 	target_link_libraries(datachannel PUBLIC ws2_32) # winsock2
 	target_link_libraries(datachannel-static PUBLIC ws2_32) # winsock2
+	if(NOT USE_GNUTLS AND NOT USE_MBEDTLS)
+		target_link_libraries(datachannel PRIVATE crypt32) # system root certificates
+		target_link_libraries(datachannel-static PUBLIC crypt32) # system root certificates
+	endif()
 endif()
 
 if (NO_WEBSOCKET)

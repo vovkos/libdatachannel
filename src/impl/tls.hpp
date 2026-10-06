@@ -75,6 +75,7 @@ std::shared_ptr<mbedtls_x509_crt> new_x509_crt();
 #ifdef _WIN32
 // Include winsock2.h header first since OpenSSL may include winsock.h
 #include <winsock2.h>
+#include <wincrypt.h>
 #endif
 
 #include <openssl/ssl.h>
@@ -100,6 +101,12 @@ bool check_error(int err, const string &message = "OpenSSL error",
 BIO *BIO_new_from_file(const string &filename);
 
 void SSL_CTX_add_cert_to_store_from_pem(SSL_CTX *ctx, const string &pem);
+
+#ifdef _WIN32
+
+void SSL_CTX_add_win_cert_store(SSL_CTX *ctx, DWORD location, LPCWSTR name);
+
+#endif
 
 } // namespace rtc::openssl
 

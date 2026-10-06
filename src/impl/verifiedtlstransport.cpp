@@ -45,6 +45,20 @@ VerifiedTlsTransport::VerifiedTlsTransport(
 		throw;
 	}
 #else
+	if (mIsClient) {
+		if (!SSL_CTX_set_default_verify_paths(mCtx)) {
+			PLOG_WARNING << "SSL root CA certificates unavailable";
+		}
+
+#ifdef _WIN32
+		try {
+			openssl::SSL_CTX_add_win_cert_store(mCtx, CERT_SYSTEM_STORE_LOCAL_MACHINE, L"ROOT");
+		} catch (std::exception const &e) {
+			PLOG_WARNING << "Failed to add Windows root CA certificates: " << e.what();
+		}
+#endif
+	}
+
 	if (cacert) {
 		if (cacert->find(PemBeginCertificateTag) == string::npos) {
 			// *cacert is a file path

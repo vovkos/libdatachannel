@@ -125,6 +125,9 @@ public:
 	void resetCallbacks();
 	CertificateFingerprint remoteFingerprint();
 
+	// DTLS session (gnutls_session_t, mbedtls_ssl_context* or SSL*); holds the transport; null if none
+	shared_ptr<void> dtlsSession() const;
+
 	// Stats
 	void clearStats();
 	size_t bytesSent();

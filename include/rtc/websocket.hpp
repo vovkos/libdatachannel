@@ -59,6 +59,9 @@ public:
 	optional<string> path() const;
 	std::multimap<string, string, case_insensitive_less> requestHeaders() const;
 
+	// TLS session (gnutls_session_t, mbedtls_ssl_context* or SSL*); holds the transport; null if none
+	shared_ptr<void> tlsSession() const;
+
 private:
 	using CheshireCat<impl::WebSocket>::impl;
 };

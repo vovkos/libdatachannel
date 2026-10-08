@@ -411,6 +411,11 @@ CertificateFingerprint PeerConnection::remoteFingerprint() {
 	return impl()->remoteFingerprint();
 }
 
+shared_ptr<void> PeerConnection::dtlsSession() const {
+	auto dtlsTransport = impl()->getDtlsTransport();
+	return dtlsTransport ? shared_ptr<void>(dtlsTransport, dtlsTransport->session()) : nullptr;
+}
+
 std::ostream &operator<<(std::ostream &out, PeerConnection::State state) {
 	using State = PeerConnection::State;
 	const char *str;

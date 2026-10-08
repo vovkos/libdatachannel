@@ -40,6 +40,14 @@ public:
 
 	bool isClient() const { return mIsClient; }
 
+#if USE_GNUTLS
+	gnutls_session_t session() { return mSession; }
+#elif USE_MBEDTLS
+	mbedtls_ssl_context *session() { return &mSsl; }
+#else
+	SSL *session() { return mSsl; }
+#endif
+
 protected:
 	virtual void incoming(message_ptr message) override;
 	virtual bool outgoing(message_ptr message) override;

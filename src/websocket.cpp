@@ -64,6 +64,11 @@ optional<string> WebSocket::remoteAddress() const {
 	return tcpTransport ? make_optional(tcpTransport->remoteAddress()) : nullopt;
 }
 
+shared_ptr<void> WebSocket::tlsSession() const {
+	auto tlsTransport = impl()->getTlsTransport();
+	return tlsTransport ? shared_ptr<void>(tlsTransport, tlsTransport->session()) : nullptr;
+}
+
 optional<string> WebSocket::path() const {
 	auto state = impl()->state.load();
 	auto handshake = impl()->getWsHandshake();

@@ -438,10 +438,13 @@ shared_ptr<WsTransport> WebSocket::initWsTransport() {
 								triggerOpen();
 						}
 						break;
-					case State::Failed:
-						triggerError("WebSocket connection failed");
+					case State::Failed: {
+						auto handshake = getWsHandshake();
+						auto upgradeError = handshake ? handshake->upgradeError() : nullopt;
+						triggerError(upgradeError ? upgradeError->what() : "WebSocket connection failed");
 						remoteClose();
 						break;
+					}
 					case State::Disconnected:
 						remoteClose();
 						break;

@@ -50,8 +50,22 @@ public:
 		const int mResponseCode;
 	};
 
+	// client side: the server refused the upgrade, e.g. 403
+	class UpgradeError : public Error {
+	public:
+		UpgradeError(int responseCode, const string &reasonPhrase);
+		int responseCode() const;
+		const string &reasonPhrase() const;
+
+	private:
+		const int mResponseCode;
+		const string mReasonPhrase;
+	};
+
 	size_t parseHttpRequest(const byte *buffer, size_t size);
 	size_t parseHttpResponse(const byte *buffer, size_t size);
+
+	optional<UpgradeError> upgradeError() const; // only if the server refused the upgrade
 
 private:
 	static string generateKey();
@@ -62,6 +76,7 @@ private:
 	std::vector<string> mProtocols;
 	http_headers mRequestHeaders;
 	string mKey;
+	optional<UpgradeError> mUpgradeError;
 	mutable std::mutex mMutex;
 };
 

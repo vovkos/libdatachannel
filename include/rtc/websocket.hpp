@@ -59,6 +59,10 @@ public:
 	optional<string> path() const;
 	std::multimap<string, string, case_insensitive_less> requestHeaders() const;
 
+	// only if the server refused the upgrade: HTTP status code (e.g. 403) and reason phrase
+	optional<int> upgradeErrorResponseCode() const;
+	optional<string> upgradeErrorReasonPhrase() const;
+
 	// TLS session (gnutls_session_t, mbedtls_ssl_context* or SSL*); holds the transport; null if none
 	shared_ptr<void> tlsSession() const;
 

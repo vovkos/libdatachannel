@@ -83,6 +83,18 @@ std::multimap<string, string, case_insensitive_less> WebSocket::requestHeaders()
 	           : std::multimap<string, string, case_insensitive_less>{};
 }
 
+optional<int> WebSocket::upgradeErrorResponseCode() const {
+	auto handshake = impl()->getWsHandshake();
+	auto error = handshake ? handshake->upgradeError() : nullopt;
+	return error ? std::make_optional(error->responseCode()) : nullopt;
+}
+
+optional<string> WebSocket::upgradeErrorReasonPhrase() const {
+	auto handshake = impl()->getWsHandshake();
+	auto error = handshake ? handshake->upgradeError() : nullopt;
+	return error ? std::make_optional(error->reasonPhrase()) : nullopt;
+}
+
 std::ostream &operator<<(std::ostream &out, WebSocket::State state) {
 	using State = WebSocket::State;
 	const char *str;

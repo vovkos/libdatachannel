@@ -70,6 +70,11 @@ http_headers WsHandshake::requestHeaders() const {
 	return mRequestHeaders;
 }
 
+optional<WsHandshake::UpgradeError> WsHandshake::upgradeError() const {
+	std::unique_lock lock(mMutex);
+	return mUpgradeError;
+}
+
 string WsHandshake::generateHttpRequest() {
 	std::unique_lock lock(mMutex);
 	mKey = generateKey();
@@ -228,8 +233,12 @@ size_t WsHandshake::parseHttpResponse(const byte *buffer, size_t size) {
 	unsigned int code = 0;
 	status >> protocol >> code;
 	PLOG_DEBUG << "WebSocket response code=" << code;
-	if (code != 101)
-		throw std::runtime_error("Unexpected response code " + to_string(code) + " for WebSocket");
+	if (code != 101) {
+		string reasonPhrase;
+		std::getline(status >> std::ws, reasonPhrase);
+		mUpgradeError.emplace(int(code), reasonPhrase);
+		throw *mUpgradeError;
+	}
 
 	auto headers = parseHttpHeaders(lines);
 
@@ -273,6 +282,14 @@ WsHandshake::RequestError::RequestError(const string &w, int responseCode)
     : Error(w), mResponseCode(responseCode) {}
 
 int WsHandshake::RequestError::RequestError::responseCode() const { return mResponseCode; }
+
+WsHandshake::UpgradeError::UpgradeError(int responseCode, const string &reasonPhrase)
+    : Error("WebSocket upgrade refused: " + to_string(responseCode) + " " + reasonPhrase),
+      mResponseCode(responseCode), mReasonPhrase(reasonPhrase) {}
+
+int WsHandshake::UpgradeError::responseCode() const { return mResponseCode; }
+
+const string &WsHandshake::UpgradeError::reasonPhrase() const { return mReasonPhrase; }
 
 } // namespace rtc::impl
 
